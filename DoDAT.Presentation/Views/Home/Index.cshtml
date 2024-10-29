@@ -1,10 +1,8 @@
 ﻿@model IEnumerable<DoDAT.Presentation.Domain.ToDoItem>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "List";
 }
-
-<h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -19,35 +17,49 @@
                 @Html.DisplayNameFor(model => model.Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IsCompleted)
+                Dead Line
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DueDate)
+            <th class="text-center">
+                Is Completed
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsCompleted)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DueDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr class="@(item.IsCompleted ? "table-success" : "")">
+                <!-- Only apply strikethrough to Title and Description if IsCompleted is true -->
+                <td class="@(item.IsCompleted ? "text-decoration-line-through" : "")">
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td class="@(item.IsCompleted ? "text-decoration-line-through" : "")">
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @String.Format("{0:dd.MM.yyyy}", item.DueDate)
+                </td>
+                <td class="text-center">
+                    @Html.DisplayFor(modelItem => item.IsCompleted)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+<div class="mt-xxl-5 btn btn-primary">
+    <a asp-action="Index">Show all</a>
+</div>
+<style>
+    .table-success {
+        background-color: #d4edda;
+        color: #155724; 
+    }
+
+    .text-decoration-line-through {
+        text-decoration: line-through; 
+    }
+</style>
