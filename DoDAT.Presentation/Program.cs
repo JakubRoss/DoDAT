@@ -1,3 +1,4 @@
+using DoDAT.Presentation.Domain;
 using DoDAT.Presentation.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,9 @@ namespace DoDAT.Presentation
             // Dodaj DbContext z SQLite
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection")));
+
+            //Rejestracja Serwisow
+            builder.Services.AddScoped<IToDoitemRepository,ToDoitemRepository>();
 
             var app = builder.Build();
 
