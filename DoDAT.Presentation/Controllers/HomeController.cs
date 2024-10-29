@@ -1,32 +1,72 @@
-using DoDAT.Presentation.Models;
+using DoDAT.Presentation.Domain;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
-namespace DoDAT.Presentation.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private IToDoitemRepository _toDoitemRepository;
+
+    public HomeController(IToDoitemRepository toDoitemRepository)
     {
-        private readonly ILogger<HomeController> _logger;
+        _toDoitemRepository = toDoitemRepository;
+    }
 
-        public HomeController(ILogger<HomeController> logger)
+    public async Task<IActionResult> Index(string? selectedDate)
+    {
+        IEnumerable<ToDoItem> todos;
+
+        DateTime dateTime;
+
+        if (DateTime.TryParse(selectedDate, out dateTime))
         {
-            _logger = logger;
+            todos = await _toDoitemRepository.GetToDoItemsByDateAsync(dateTime);
+        }
+        else
+        {
+            todos = await _toDoitemRepository.GetAllToDoItemsAsync();
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View(todos);
+    }
 
-        public IActionResult Privacy()
+    [HttpGet]
+    public IActionResult Create()
+    {
+        return View();
+    }
+    [HttpPost]
+    public async Task<IActionResult> Create(ToDoItem todo)
+    {
+        if (ModelState.IsValid)
         {
-            return View();
+            await _toDoitemRepository.AddToDoItemAsync(todo);
+            return RedirectToAction("Index");
         }
+        return RedirectToAction("Index");
+    }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+    public async Task<IActionResult> Edit(int id)
+    {
+        var todo = await _toDoitemRepository.GetToDoItemByIdAsync(id);
+        if (todo == null)
+            return NotFound();
+
+        return View(todo);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(ToDoItem todo)
+    {
+        if (ModelState.IsValid)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            await _toDoitemRepository.UpdateToDoItemAsync(todo);
+            return RedirectToAction("Index");
         }
+        return View(todo);
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _toDoitemRepository.DeleteToDoItemAsync(id);
+        return RedirectToAction("Index");
     }
 }
