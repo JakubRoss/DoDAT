@@ -15,10 +15,11 @@ namespace DoDAT.Presentation
 
             // Dodaj DbContext z SQLite
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection")));
+                options.UseSqlite("Data Source=tasks.db"));
 
             //Rejestracja Serwisow
             builder.Services.AddScoped<IToDoitemRepository,ToDoitemRepository>();
+            builder.Services.AddTransient<DatabaseSeeder>();
 
             var app = builder.Build();
 
@@ -29,6 +30,10 @@ namespace DoDAT.Presentation
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+            seeder.Seed();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
