@@ -1,5 +1,5 @@
 # DoDAT
-
+https://dodatapp.azurewebsites.net/
 ## Opis
 
 ToDo Application to bardzo prosta aplikacja stworzona w technologii ASP.NET w modelu MVC, wykorzystująca .NET 8 oraz Entity Framework. Aplikacja umożliwia zarządzanie listą zadań, co pozwala użytkownikom na dodawanie, edytowanie oraz usuwanie zadań.
