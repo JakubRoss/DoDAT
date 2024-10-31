@@ -72,4 +72,4 @@ Wykonaj polecenie, aby utworzyć bazę danych
 
 # OR Wejdz w link:
 
-http://localhost:5000
+https://dodatapp.azurewebsites.net/
