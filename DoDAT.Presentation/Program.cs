@@ -1,5 +1,6 @@
 using DoDAT.Presentation.Domain;
 using DoDAT.Presentation.Infrastructure;
+using DoDAT.Presentation.MIddleware;
 using Microsoft.EntityFrameworkCore;
 
 namespace DoDAT.Presentation
@@ -20,6 +21,7 @@ namespace DoDAT.Presentation
             //Rejestracja Serwisow
             builder.Services.AddScoped<IToDoitemRepository,ToDoitemRepository>();
             builder.Services.AddTransient<DatabaseSeeder>();
+            builder.Services.AddTransient<ErrorHandlingMiddleware>();
 
             var app = builder.Build();
 
@@ -34,6 +36,8 @@ namespace DoDAT.Presentation
             var scope = app.Services.CreateScope();
             var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
             seeder.Seed();
+
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
