@@ -7,13 +7,14 @@
         /// </summary>
         /// <param name="doTask">Model zadania do dodania.</param>
         Task AddToDoItemAsync(ToDoItem doTask);
+        Task<ToDoItem> AddToDoItemAsync(ToDoItemDto doTask, int userId);
 
         /// <summary>
         /// Pobiera zadanie po identyfikatorze.
         /// </summary>
         /// <param name="id">Identyfikator zadania.</param>
-        /// <returns>Model zadania lub null, jeśli nie znaleziono.</returns>
-        Task<ToDoItem?> GetToDoItemByIdAsync(int id);
+        /// <returns>Model zadania</returns>
+        Task<ToDoItem> GetToDoItemByIdAsync(int id);
 
         /// <summary>
         /// Pobiera wszystkie zadania z bazy danych.

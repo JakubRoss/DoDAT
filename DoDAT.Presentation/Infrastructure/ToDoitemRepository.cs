@@ -11,16 +11,38 @@ namespace DoDAT.Presentation.Infrastructure
         {
             _context = context;
         }
-
         public async Task AddToDoItemAsync(ToDoItem doTask)
         {
             await _context.Task.AddAsync(doTask);
             await _context.SaveChangesAsync();
         }
-
-        public async Task<ToDoItem?> GetToDoItemByIdAsync(int id)
+        public async Task<ToDoItem> AddToDoItemAsync(ToDoItemDto doTask, int userId)
         {
-            return await _context.Task.FirstOrDefaultAsync(ToDoitem => ToDoitem.Id == id);
+            var toDoItem = new ToDoItem
+            {
+                Title = doTask.Title,
+                Description = doTask.Description,
+                IsCompleted = doTask.IsCompleted,       //mbapper :V
+                DueDate = doTask.DueDate,
+                UserId = userId
+            };
+            await _context.Task.AddAsync(toDoItem);
+            await _context.SaveChangesAsync();
+            return toDoItem;
+        }
+
+        public async Task<ToDoItem> GetToDoItemByIdAsync(int id)
+        {
+
+            var toDoitem = await _context.Task.FirstOrDefaultAsync(ToDoitem => ToDoitem.Id == id);
+            if(toDoitem != null)
+            {
+                return toDoitem;
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public async Task<IEnumerable<ToDoItem>> GetAllToDoItemsAsync()
@@ -42,6 +64,10 @@ namespace DoDAT.Presentation.Infrastructure
 
                 await _context.SaveChangesAsync();
             }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public async Task DeleteToDoItemAsync(int id)
@@ -51,6 +77,10 @@ namespace DoDAT.Presentation.Infrastructure
             {
                 _context.Task.Remove(taskToDelete);
                 await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         }
 
