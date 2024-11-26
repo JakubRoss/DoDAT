@@ -1,6 +1,7 @@
 using DoDAT.Presentation.Domain;
 using DoDAT.Presentation.Infrastructure;
 using DoDAT.Presentation.MIddleware;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DoDAT.Presentation
@@ -22,6 +23,8 @@ namespace DoDAT.Presentation
             builder.Services.AddScoped<IToDoitemRepository,ToDoitemRepository>();
             builder.Services.AddTransient<DatabaseSeeder>();
             builder.Services.AddTransient<ErrorHandlingMiddleware>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
 
             var app = builder.Build();
 
