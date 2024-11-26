@@ -1,6 +1,7 @@
 using DoDAT.Presentation.Domain;
 using DoDAT.Presentation.Infrastructure;
 using DoDAT.Presentation.MIddleware;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,22 @@ namespace DoDAT.Presentation
             // Dodaj DbContext z SQLite
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite("Data Source=tasks.db"));
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Cookie.HttpOnly = false; // Cookie dostepne tylko przez HTTP (nie JS | if true) zrobic sprawdzanie po stronie serwera
+                    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.None : CookieSecurePolicy.Always; // Tylko HTTPS - Always
+                    if (!builder.Environment.IsDevelopment())
+                    {
+                        options.Cookie.SameSite = SameSiteMode.None; // Chroni przed atakami CSRF - Lax
+                    }
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(60); // Czas trwania sesji
+                    options.SlidingExpiration = true; // Odnawianie ciasteczka
+                    options.LoginPath = "/account/login"; // Endpoint logowania
+                    options.LogoutPath = "/account/logout"; // Endpoint wylogowania
+                });
+
 
             //Rejestracja Serwisow
             builder.Services.AddScoped<IToDoitemRepository,ToDoitemRepository>();
