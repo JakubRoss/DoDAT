@@ -1,18 +1,19 @@
-using DoDAT.Presentation.Domain;
+using DoDAT.Application.Interfaces;
+using DoDAT.Domain.Entities;
+using DoDAT.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 [ApiController]
 [Route("api/tasks")]
 [Authorize]
-public class HomeController : ControllerBase
+public class TaskController : ControllerBase
 {
-    private readonly IToDoitemRepository _toDoitemRepository;
+    private readonly IToDoitemService _toDoitemService;
 
-    public HomeController(IToDoitemRepository toDoitemRepository)
+    public TaskController( IToDoitemService toDoitemService)
     {
-        _toDoitemRepository = toDoitemRepository;
+        _toDoitemService = toDoitemService;
     }
 
     [HttpPost]
@@ -21,7 +22,7 @@ public class HomeController : ControllerBase
         var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
         if (int.TryParse(userIdClaim, out int userId))
         {
-            var toDoItem = await _toDoitemRepository.AddToDoItemAsync(todo, userId);
+            var toDoItem = await _toDoitemService.AddToDoItemAsync(todo, userId);
             return Ok(toDoItem);
         }
         else
@@ -31,64 +32,74 @@ public class HomeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ToDoItem>> GetAll(int id)
+    public async Task<ActionResult<ToDoItem>> GetAll()
     {
-        var todo = await _toDoitemRepository.GetAllToDoItemsAsync();
-        return Ok(todo);
+        var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            var todos = await _toDoitemService.GetAllToDoItemsAsync(userId);
+            return Ok(todos);
+        }
+        else
+        {
+            throw new UnauthorizedAccessException();
+        }
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ToDoItem>> GetById(int id)
+    [HttpGet("{toDoItemId}")]
+    public async Task<ActionResult<ToDoItem>> GetById(int toDoItemId)
     {
-        ToDoItem todo = await _toDoitemRepository.GetToDoItemByIdAsync(id);
-        return Ok(todo);
+        var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            ToDoItem todo = await _toDoitemService.GetToDoItemByIdAsync(toDoItemId, userId);
+            return Ok(todo);
+        }
+        else
+        {
+            throw new UnauthorizedAccessException();
+        }
     }
 
     [HttpGet("by-date")]
-    public async Task<IEnumerable<ToDoItem>> GetByDate([FromQuery] string? selectedDate)
+    public async Task<IActionResult> GetByDate([FromQuery] string? selectedDate)
     {
+        var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
+        if (!DateTime.TryParse(selectedDate, out DateTime dateTime))
+            return BadRequest("Invalid date format.");
 
-        DateTime dateTime;
+        if (!int.TryParse(userIdClaim, out int userId))
+            return Unauthorized("Invalid or missing user information.");
 
-        if (DateTime.TryParse(selectedDate, out dateTime))
+        var toDoItems = await _toDoitemService.GetToDoItemsByDateAsync(dateTime, userId);
+        return Ok(toDoItems);
+    }
+
+    [HttpPut("{taskId}")]
+    public async Task<IActionResult> Update(int taskId, [FromBody] ToDoItemDto payload)
+    {
+        //if (id != payload.Id)
+        //    return BadRequest("Id Mismatch");
+        var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
+
+        if (!int.TryParse(userIdClaim, out int userId))
         {
-            return await _toDoitemRepository.GetToDoItemsByDateAsync(dateTime);
+            throw new UnauthorizedAccessException();
         }
-        return new List<ToDoItem>();
+        await _toDoitemService.UpdateToDoItemAsync(payload, userId , taskId);
+        return Ok();
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] ToDoItem todo)
+    [HttpDelete("{ToDoItemToDeleteId}")]
+    public async Task<IActionResult> Delete(int ToDoItemToDeleteId)
     {
-        if (id != todo.Id)
-            return BadRequest("Id Mismatch");
+        var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
+        if (!int.TryParse(userIdClaim, out int userId))
+        {
+            throw new UnauthorizedAccessException();
+        }
 
-        await _toDoitemRepository.UpdateToDoItemAsync(todo);
+        await _toDoitemService.DeleteToDoItemAsync(ToDoItemToDeleteId, userId);
         return NoContent();
     }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-
-        await _toDoitemRepository.DeleteToDoItemAsync(id);
-        return NoContent();
-    }
-}
-public class ToDoItemDto
-{
-
-    [Required(ErrorMessage = "Title is required.")]
-    [StringLength(200, ErrorMessage = "Title cannot be longer than 200 characters.")]
-    public string Title { get; set; }
-
-    [StringLength(500, ErrorMessage = "Description cannot be longer than 500 characters.")]
-    public string Description { get; set; }
-
-    public bool IsCompleted { get; set; }
-
-    [Required(ErrorMessage = "Due Date is required.")]
-    public DateTime DueDate { get; set; }
-
-
 }
