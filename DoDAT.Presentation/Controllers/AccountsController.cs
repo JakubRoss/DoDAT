@@ -1,8 +1,8 @@
-﻿using DoDAT.Presentation.Domain;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using DoDAT.Application.Interfaces;
+using DoDAT.Domain.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace DoDAT.Presentation.Controllers
@@ -11,24 +11,24 @@ namespace DoDAT.Presentation.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public AccountsController(IUserRepository userRepository)
+        public AccountsController(IUserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpPost("register")]
         public async Task Register([FromBody] UserDto user)
         {
 
-            await _userRepository.Register(user);
+            await _userService.Register(user);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserDto userDto)
         {
-            var user = await _userRepository.LogIn(userDto);
+            var user = await _userService.LogIn(userDto);
 
             var claims = new List<Claim>()
             {
@@ -36,7 +36,6 @@ namespace DoDAT.Presentation.Controllers
                 new("Name", user.Login)
             };
 
-            //Nie robilem wczesniej z cookie authetication tylko jwt gdzie uzywalem kluczy (sha256) o ktorych byla mowa 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
@@ -59,15 +58,4 @@ namespace DoDAT.Presentation.Controllers
             return Ok(new { isLoggedIn = User.Identity!.IsAuthenticated });
         }
     }
-    // DTOs
-    public class UserDto
-    {
-        [Required(ErrorMessage = "Login is required.")]
-        [StringLength(100, MinimumLength = 4, ErrorMessage = "Login cannot be longer than 100 characters.")]
-        public string Login { get; set; }
-        [Required(ErrorMessage = "Password is required.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long.")]
-        public string Password { get; set; }
-    }
-
 }

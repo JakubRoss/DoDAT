@@ -1,9 +1,8 @@
-using DoDAT.Presentation.Domain;
-using DoDAT.Presentation.Infrastructure;
-using DoDAT.Presentation.MIddleware;
+using DoDAT.Application.Extension;
+using DoDAT.Application.MIddleware;
+using DoDAT.Infrastructure;
+using DoDAT.Infrastructure.Extension;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace DoDAT.Presentation
 {
@@ -14,11 +13,10 @@ namespace DoDAT.Presentation
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllers();
 
-            // Dodaj DbContext z SQLite
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite("Data Source=tasks.db"));
+            builder.Services.AddInfrastructure();
+            builder.Services.AddApplication();
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -31,45 +29,34 @@ namespace DoDAT.Presentation
                     }
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(60); // Czas trwania sesji
                     options.SlidingExpiration = true; // Odnawianie ciasteczka
-                    options.LoginPath = "/account/login"; // Endpoint logowania
-                    options.LogoutPath = "/account/logout"; // Endpoint wylogowania
+                    options.LoginPath = "/api/account/login"; // Endpoint logowania
+                    options.LogoutPath = "/api/account/logout"; // Endpoint wylogowania
                 });
 
+            // Rejestracja autoryzacji
+            builder.Services.AddAuthorization();
 
             //Rejestracja Serwisow
-            builder.Services.AddScoped<IToDoitemRepository,ToDoitemRepository>();
-            builder.Services.AddTransient<DatabaseSeeder>();
-            builder.Services.AddTransient<ErrorHandlingMiddleware>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
+
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             var scope = app.Services.CreateScope();
             var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
             seeder.Seed();
 
-            app.UseMiddleware<ErrorHandlingMiddleware>();
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
+            if(!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseAuthentication();
+
             app.UseAuthorization();
 
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapControllers();
 
             app.Run();
         }
