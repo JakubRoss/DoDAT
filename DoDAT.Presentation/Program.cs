@@ -12,6 +12,18 @@ namespace DoDAT.Presentation
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Dodaj us³ugê CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowVuet", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173") // Podaj dok³adn¹ domenê frontendow¹
+                          .AllowCredentials() // Pozwól na poœwiadczenia (np. ciasteczka)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             // Add services to the container.
             builder.Services.AddControllers();
 
@@ -40,6 +52,9 @@ namespace DoDAT.Presentation
 
 
             var app = builder.Build();
+
+            // U¿yj CORS
+            app.UseCors("AllowVuet");
 
             app.UseMiddleware<ErrorHandlingMiddleware>();
 
