@@ -29,8 +29,9 @@ namespace DoDAT.Application.Services
         async Task IToDoitemService.DeleteToDoItemAsync(int id, int userId)
         {
             var itemToDelete = await toDoItemRepository.ReadToDoItemByIdAsync(id);
-            if (itemToDelete == null || itemToDelete.UserId == userId)
+            if (itemToDelete == null || itemToDelete.UserId != userId)
                 throw new UnauthorizedAccessException();
+            await toDoItemRepository.DeleteToDoItemAsync(itemToDelete);
         }
 
         async Task<IEnumerable<ToDoItem>> IToDoitemService.GetAllToDoItemsAsync(int userId)
