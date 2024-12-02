@@ -8,21 +8,19 @@ const isLoggedIn = ref(false);
 const router = useRouter();
 
 // Sprawdzanie statusu logowania
-const checkLoginStatus = () => {
-  isLoggedIn.value = document.cookie.includes("AspNetCore.Cookies");
+const checkLoginStatus = async () => {
+  try {
+    const response = await api.get("/api/account/isLoggedIn");
+    isLoggedIn.value = response.data.isLoggedIn;
+  } catch (error) {
+    console.error("Błąd podczas sprawdzania logowania:", error);
+    isLoggedIn.value = false;
+  }
 };
 
-// Funkcja do logowania
-const login = async (loginData) => {
-  try {
-    await api.post("/api/account/login", loginData);
-    isLoggedIn.value = true;
-    alert("Zalogowano pomyślnie!");
-    router.push("/home");
-  } catch (error) {
-    console.error("Błąd logowania:", error);
-    alert("Nieprawidłowe dane logowania lub błąd serwera.");
-  }
+// Ustawianie stanu logowania
+const setLoginStatus = (status) => {
+  isLoggedIn.value = status;
 };
 
 // Funkcja do wylogowania
@@ -56,7 +54,8 @@ onMounted(() => {
     </nav>
   </header>
 
-  <router-view />
+  <!-- przekazanie setLoginStatus jako props do router-view -->
+  <router-view :onLoginSuccess="setLoginStatus" />
 </template>
 
 <style scoped>
