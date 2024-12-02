@@ -2,6 +2,13 @@
   <div class="home">
     <h1>To-Do List</h1>
 
+    <!-- Formularz filtrowania zadań po dacie -->
+    <div class="date-filter">
+      <label for="selectedDate">Filter by Date:</label>
+      <input type="date" v-model="selectedDate" @change="fetchTasksByDate" />
+      <button @click="resetFilter" class="btn btn-reset">Reset</button>
+    </div>
+
     <!-- Tabela z zadaniami -->
     <div v-if="tasks.length > 0">
       <table class="task-table">
@@ -105,12 +112,12 @@ import api from "@/axios";
 
 // Reaktywne dane
 const tasks = ref([]);
-const showAddTaskForm = ref(false); // Zmienna do pokazania formularza dodawania
-const showEditTaskForm = ref(false); // Zmienna do pokazania formularza edytowania
+const showAddTaskForm = ref(false);
+const showEditTaskForm = ref(false);
 const newTask = ref({
   title: "",
   description: "",
-  dueDate: "",
+  dueDate: new Date().toISOString().slice(0, 10), // Domyślna data na dziś
 });
 const editTaskData = ref({
   id: null,
@@ -119,8 +126,9 @@ const editTaskData = ref({
   dueDate: "",
   isCompleted: false,
 });
+const selectedDate = ref(null);
 
-// Funkcja do pobrania wszystkich zadań
+// Funkcja do pobrania wszystkich zadań lub zadań po dacie
 const fetchTasks = async () => {
   try {
     const response = await api.get("/api/tasks");
@@ -130,19 +138,35 @@ const fetchTasks = async () => {
   }
 };
 
+// Funkcja do pobrania zadań po dacie
+const fetchTasksByDate = async () => {
+  try {
+    if (selectedDate.value) {
+      const response = await api.get("/api/tasks/by-date", {
+        params: { selectedDate: selectedDate.value },
+      });
+      tasks.value = response.data;
+    } else {
+      await fetchTasks(); // Jeśli nie wybrano daty, ładuj wszystkie zadania
+    }
+  } catch (error) {
+    console.error("Error fetching tasks by date:", error);
+  }
+};
+
 // Funkcja do edytowania zadania
 const editTask = (task) => {
-  editTaskData.value = { ...task }; // Przekazujemy dane zadania do formularza
-  editTaskData.value.dueDate = task.dueDate.slice(0, 10); // Przycięcie daty do formatu YYYY-MM-DD
-  showEditTaskForm.value = true; // Pokaż formularz edycji
-  showAddTaskForm.value = false; // Ukryj formularz dodawania
+  editTaskData.value = { ...task };
+  editTaskData.value.dueDate = task.dueDate.slice(0, 10);
+  showEditTaskForm.value = true;
+  showAddTaskForm.value = false;
 };
 
 // Funkcja do usuwania zadania
 const deleteTask = async (taskId) => {
   try {
     await api.delete(`/api/tasks/${taskId}`);
-    await fetchTasks(); // Odśwież listę po usunięciu
+    await fetchTasks();
     alert("Task deleted successfully");
   } catch (error) {
     console.error("Error deleting task:", error);
@@ -153,9 +177,13 @@ const deleteTask = async (taskId) => {
 const createTask = async () => {
   try {
     await api.post("/api/tasks", newTask.value);
-    await fetchTasks(); // Odśwież listę po dodaniu
-    showAddTaskForm.value = false; // Ukryj formularz
-    newTask.value = { title: "", description: "", dueDate: "" }; // Resetuj formularz
+    await fetchTasks();
+    showAddTaskForm.value = false;
+    newTask.value = {
+      title: "",
+      description: "",
+      dueDate: new Date().toISOString().slice(0, 10),
+    }; // Resetuj formularz z domyślną datą
     alert("Task added successfully");
   } catch (error) {
     console.error("Error adding task:", error);
@@ -166,8 +194,8 @@ const createTask = async () => {
 const updateTask = async () => {
   try {
     await api.put(`/api/tasks/${editTaskData.value.id}`, editTaskData.value);
-    await fetchTasks(); // Odśwież listę po edycji
-    showEditTaskForm.value = false; // Zamknij formularz edycji
+    await fetchTasks();
+    showEditTaskForm.value = false;
     alert("Task updated successfully");
   } catch (error) {
     console.error("Error updating task:", error);
@@ -184,13 +212,23 @@ const cancelEditTask = () => {
     description: "",
     dueDate: "",
     isCompleted: false,
-  }; // Resetuj dane formularza
+  };
 };
 
 // Funkcja do anulowania dodawania zadania
 const cancelAddTask = () => {
   showAddTaskForm.value = false;
-  newTask.value = { title: "", description: "", dueDate: "" }; // Resetuj formularz
+  newTask.value = {
+    title: "",
+    description: "",
+    dueDate: new Date().toISOString().slice(0, 10),
+  }; // Resetuj formularz
+};
+
+// Funkcja do resetowania filtra
+const resetFilter = () => {
+  selectedDate.value = null; // Resetuj wybraną datę
+  fetchTasks(); // Pobierz wszystkie zadania
 };
 
 // Pobierz zadania przy pierwszym załadowaniu komponentu
@@ -292,5 +330,18 @@ button {
 
 .task-completed {
   background-color: #d4edda;
+}
+
+.date-filter {
+  margin-bottom: 20px;
+}
+
+.btn-reset {
+  background-color: #ffc107;
+  color: white;
+}
+
+.btn-reset:hover {
+  background-color: #e0a800;
 }
 </style>
