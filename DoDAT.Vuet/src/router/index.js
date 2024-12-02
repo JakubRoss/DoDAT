@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
+import Register from "@/views/Register.vue"; // Dodajemy trasę rejestracji
 
 function isLoggedIn() {
   // Sprawdzamy, czy istnieje ciasteczko sesji
@@ -28,9 +29,21 @@ const router = createRouter({
       component: Home,
       beforeEnter: (to, from, next) => {
         if (isLoggedIn()) {
-          next(); // Jeśli zalogowany, załaduj Home
+          next();
         } else {
-          next("/login"); // Jeśli nie, przekieruj na stronę logowania
+          next("/login");
+        }
+      },
+    },
+    {
+      path: "/register",
+      name: "Register",
+      component: Register,
+      beforeEnter: (to, from, next) => {
+        if (isLoggedIn()) {
+          next("/home");
+        } else {
+          next();
         }
       },
     },
