@@ -3,6 +3,10 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/axios";
 
+const props = defineProps({
+  onLoginSuccess: Function, // Funkcja do ustawiania stanu w App.vue
+});
+
 const router = useRouter();
 
 const loginData = ref({
@@ -15,6 +19,7 @@ const login = async () => {
     const response = await api.post("/api/account/login", loginData.value);
 
     alert("Zalogowano pomyślnie!");
+    props.onLoginSuccess(true); // Przekazanie wartości true do App.vue
     router.push("/");
   } catch (error) {
     console.error("Błąd logowania:", error);
