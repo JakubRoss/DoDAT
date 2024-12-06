@@ -55,7 +55,10 @@ onMounted(() => {
   </header>
 
   <!-- przekazanie setLoginStatus jako props do router-view -->
-  <router-view :onLoginSuccess="setLoginStatus" />
+  <router-view
+    :onLoginSuccess="setLoginStatus"
+    style="margin-top: 5vh; padding-bottom: 10vh"
+  />
 </template>
 
 <style scoped>

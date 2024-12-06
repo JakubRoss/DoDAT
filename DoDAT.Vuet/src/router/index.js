@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
 import Register from "@/views/Register.vue"; // Dodajemy trasę rejestracji
+import Fullcallendar from "@/views/Fullcallendar.vue";
 
 function isLoggedIn() {
   // Sprawdzamy, czy istnieje ciasteczko sesji
@@ -50,6 +51,11 @@ const router = createRouter({
     {
       path: "/",
       redirect: "/home", // Domyślnie przekierowanie na /home
+    },
+    {
+      path: "/fullcalendar",
+      name: "Fullcallendar",
+      component: Fullcallendar,
     },
   ],
 });
