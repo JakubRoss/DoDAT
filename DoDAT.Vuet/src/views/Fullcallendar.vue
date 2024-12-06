@@ -51,6 +51,11 @@ export default {
         console.error("Error fetching tasks:", error);
       }
     },
+    // Wyświetlanie szczegółów klikniętego zadania
+    handleEventClick(info) {
+      alert(`Clicked on task: ${info.event.title}`);
+      console.log(this.calendarOptions.events);
+    },
   },
   mounted() {
     this.fetchTasks(); // Pobierz zadania po zamontowaniu komponentu
@@ -60,3 +65,9 @@ export default {
 <template>
   <FullCalendar :options="calendarOptions" />
 </template>
+
+<style scoped>
+.fc-event {
+  cursor: pointer !important;
+}
+</style>
