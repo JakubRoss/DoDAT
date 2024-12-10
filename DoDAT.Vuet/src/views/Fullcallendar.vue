@@ -24,6 +24,9 @@ export default {
         dateClick: this.handleDateClick,
         eventClick: this.handleEventClick,
         displayEventTime: false,
+        editable: true, // Włącza drag-and-drop dla wydarzeń
+        droppable: true, // Pozwala przeciągać elementy spoza kalendarza
+        eventDrop: this.handleEventDrop, // Funkcja obsługująca przeciągnięcie wydarzenia
       },
     };
   },
@@ -45,6 +48,7 @@ export default {
           allDay: false, // Wydarzenie całodniowe
           extendedProps: {
             description: task.description,
+            isCompleted: task.isCompleted,
           },
         }));
       } catch (error) {
@@ -55,6 +59,40 @@ export default {
     handleEventClick(info) {
       alert(`Clicked on task: ${info.event.title}`);
       console.log(this.calendarOptions.events);
+    },
+    // Obsługa przeciągania wydarzeń
+    async handleEventDrop(info) {
+      const originalDate = new Date(info.event.start); // Pobieramy oryginalną datę
+      originalDate.setDate(originalDate.getDate() + 1); // Dodajemy jeden dzień
+
+      // Konwertujemy datę na format yyyy-mm-dd
+      const updatedStartDate = originalDate.toISOString().split("T")[0];
+
+      const eventId = info.event.id;
+      console.log(updatedStartDate);
+      console.log(info.event.id);
+      try {
+        const response = await api.put(`/api/tasks/${eventId}`, {
+          title: info.event.title,
+          description: info.event.description,
+          isCompleted: info.event.isCompleted,
+          dueDate: updatedStartDate, // Przesyłamy tylko zaktualizowaną datę
+        });
+
+        // Sprawdzenie odpowiedzi z serwera
+        if (response.status === 200) {
+          alert(`Event ${eventId} updated to ${updatedStartDate}`);
+        } else {
+          // Jeśli aktualizacja nie powiedzie się, możemy przywrócić pozycję
+          alert("Błąd aktualizacji wydarzenia.");
+          info.revert(); // Cofnij zmianę, jeśli coś poszło nie tak
+        }
+      } catch (error) {
+        console.error("Error updating event:", error);
+        // Jeśli wystąpi błąd, możemy cofnąć zmianę
+        info.revert(); // Cofnij zmianę, jeśli wystąpi błąd
+        alert("Wystąpił błąd podczas aktualizacji.");
+      }
     },
   },
   mounted() {
