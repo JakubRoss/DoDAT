@@ -32,10 +32,10 @@ namespace DoDAT.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ToDoItem>> ReadToDoItemsByDateAsync(DateTime date, int userId)
+        public async Task<IEnumerable<ToDoItem>> ReadToDoItemsByDateAsync(DateOnly date, int userId)
         {
             return await _context.ToDoItems
-                .Where(toDoItem => toDoItem.DueDate.Date == date.Date && toDoItem.UserId == userId)
+                .Where(toDoItem => toDoItem.DueDate == date && toDoItem.UserId == userId)
                 .OrderBy(toDoItem => toDoItem.DueDate)
                 .ToListAsync();
         }

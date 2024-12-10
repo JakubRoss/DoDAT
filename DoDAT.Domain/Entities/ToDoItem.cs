@@ -10,7 +10,7 @@
 
         public bool IsCompleted { get; set; }
 
-        public DateTime DueDate { get; set; }
+        public DateOnly DueDate { get; set; }
 
         public User User { get; set; } = default!;
         public int UserId { get; set; }

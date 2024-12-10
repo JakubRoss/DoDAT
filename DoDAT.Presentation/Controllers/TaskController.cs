@@ -65,7 +65,7 @@ public class TaskController : ControllerBase
     public async Task<IActionResult> GetByDate([FromQuery] string? selectedDate)
     {
         var userIdClaim = User.FindFirst(t => t.Type == "NameIdentifier")?.Value;
-        if (!DateTime.TryParse(selectedDate, out DateTime dateTime))
+        if (!DateOnly.TryParse(selectedDate, out DateOnly dateTime))
             return BadRequest("Invalid date format.");
 
         if (!int.TryParse(userIdClaim, out int userId))

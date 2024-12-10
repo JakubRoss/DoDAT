@@ -15,7 +15,7 @@ namespace DoDAT.Domain.Models
         public bool IsCompleted { get; set; }
 
         [Required(ErrorMessage = "Due Date is required.")]
-        public DateTime DueDate { get; set; }
+        public DateOnly DueDate { get; set; }
 
 
     }

@@ -34,7 +34,7 @@ namespace DoDAT.Domain.Interfaces
         /// <param name="date">Data, dla której mają być odczytane zadania.</param>
         /// <param name="userId">Identyfikator użytkownika.</param>
         /// <returns>Zwraca listę zadań spełniających warunki.</returns>
-        Task<IEnumerable<ToDoItem>> ReadToDoItemsByDateAsync(DateTime date, int userId);
+        Task<IEnumerable<ToDoItem>> ReadToDoItemsByDateAsync(DateOnly date, int userId);
 
         /// <summary>
         /// Updates the properties of an existing ToDo item with the values from another ToDo item.

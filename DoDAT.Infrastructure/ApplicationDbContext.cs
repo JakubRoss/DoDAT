@@ -17,7 +17,14 @@ namespace DoDAT.Infrastructure
                 .WithOne(t => t.User)              
                 .HasForeignKey(t => t.UserId)      
                 .IsRequired()                      
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ToDoItem>()
+                .Property(e => e.DueDate)
+                .HasConversion(
+                    v => v.ToString("yyyy-MM-dd"),  // Konwersja DateOnly -> string
+                    v => DateOnly.Parse(v) // Konwersja string -> DateOnly
+                );
 
             base.OnModelCreating(modelBuilder);
         }

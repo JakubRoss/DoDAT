@@ -55,6 +55,6 @@ namespace DoDAT.Application.Interfaces
         /// <param name="date">The date to filter ToDo items.</param>
         /// <param name="userId">The ID of the user.</param>
         /// <returns>A collection of the user's ToDo items filtered by date.</returns>
-        Task<IEnumerable<ToDoItem>> GetToDoItemsByDateAsync(DateTime date, int userId);
+        Task<IEnumerable<ToDoItem>> GetToDoItemsByDateAsync(DateOnly date, int userId);
     }
 }

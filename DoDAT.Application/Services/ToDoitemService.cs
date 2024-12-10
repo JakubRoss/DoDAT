@@ -47,7 +47,7 @@ namespace DoDAT.Application.Services
             return toDoItem;
         }
 
-        async Task<IEnumerable<ToDoItem>> IToDoitemService.GetToDoItemsByDateAsync(DateTime date, int userId)
+        async Task<IEnumerable<ToDoItem>> IToDoitemService.GetToDoItemsByDateAsync(DateOnly date, int userId)
         {
             var toDoItem = await toDoItemRepository.ReadToDoItemsByDateAsync(date, userId);
             return toDoItem;
